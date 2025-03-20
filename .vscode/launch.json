@@ -10,7 +10,7 @@
             "name": "Python: Current File",
             "type": "debugpy",
             "request": "launch",
-            "program": "WikiScraper.py",
+            "program": "gbif.py",
             "console": "integratedTerminal",
         }
     ]

@@ -42,63 +42,65 @@
 #     <i>Epilachna sparsa</i>
 #     <small>Auctt.</small>
 #   </li>
-# </ul>    
+# </ul>
+import logging.config
+logger = logging.getLogger("my_app")
+
 def getSynonyms(table):
     synonyms = ''
     status = None
-    print('getSynonyms 000: starting, looking for the taxonlist')
-         
-    if table == None:
-        print('getSynonyms 010: table not supplied')
-        #if synonyms == None: synonyms='<not found>'
-        return None,'010: table not supplied'
+    logger.info('getSynonyms 000: starting, looking for the taxonlist')
     
-    # look for an a tag title="Synonym (taxonomy)"
-    a_tag = table.find('a', attrs={'title':'Synonym (taxonomy)'})
-    if a_tag == None:
-        print('getSynonyms 020: Synonym (taxonomy) not found')
-        #if synonyms == None: synonyms='<not found>'
-        return None, '020: Synonym (taxonomy) row not found>'
-    
-    #get its tr parent
-    tr = a_tag.find_parent('tr')
-    # get next tr
-    tr = tr.find_next_sibling('tr')
-    # get its li items
-    li_items = tr.findAll('li')
-    
-    if len(li_items) == 0:
-        li_items = tr.findAll('i')
-   
-    if li_items == None:
-        print('<synonyms not found>')
-        return None, '030: synonyms items found>'
- 
-    for item in li_items:
-        syns = item.text.split()
-        limit = len(syns)
+    try:        
+        if table == None:
+            logger.warning('getSynonyms 010: table not supplied')
+            #if synonyms == None: synonyms='<not found>'
+            return '','getSynonyms 010: table not supplied'
         
-        # just want the bi name, ignore the author and possible date
-        if limit>2: limit=2
+        # look for an a tag title="Synonym (taxonomy)"
+        a_tag = table.find('a', attrs={'title':'Synonym (taxonomy)'})
         
-        genus = syns[0]
-        species = f' {syns[1]}' if limit == 2 else ''
-               
-        #for i in range(0, limit, 1):
-        synonyms = f'{synonyms},{genus}{species}'
+        if a_tag == None:
+            msg = 'getSynonyms 020: Synonyms not found'
+            logger.info(msg)
+            #if synonyms == None: synonyms='<not found>'
+            return '', msg
+        
+        #get its tr parent
+        tr = a_tag.find_parent('tr')
+        # get next tr
+        tr = tr.find_next_sibling('tr')
+        # get its li items
+        li_items = tr.findAll('li')
+        
+        if len(li_items) == 0:
+            li_items = tr.findAll('i')
+    
+        if li_items == None:
+            msg = 'getSynonyms 030: synonyms li_items not found'
+            logger.debug(msg)
+            return '', msg
+    
+        for item in li_items:
+            syns  = item.text.split()
+            limit = len(syns)
             
-    # look for a <ul> with <ul class="taxonlist">
-    #ul = table.find('ul', attrs={'class':'taxonlist'})
-    
-    # get its list of <i> tags
-    #tds = ul.findAll('i')
-    
-    # create a list of the texts from each list item 
-    #for item in tds:
-    #    synonyms = f'{synonyms},{item.text}'
+            # just want the bi name, ignore the author and possible date
+            if limit>2: limit=2
+            
+            genus    = syns[0]
+            species  = f' {syns[1]}' if limit == 2 else ''
+            synonyms = f'{synonyms},{genus}{species}'
+            
+        synonyms = synonyms.lstrip(',')
+    except Exception as e:
+        logger.exception(f'getSynonyms 040: caught exception {e}')
+        return synonyms, e.message
         
-    # return it#,Pyroderces simplex Walsingham, 1891,Amneris flexiloquella Riedl, 1993,Stagmatophora gossypiella Walsingham, 1906,Anatrachyntis hemizopha Meyrick, 1916,Anatrachyntis repandatella (Legrand, 1966)
-    synonyms = synonyms.lstrip(',')
-    if synonyms == None: synonyms='<not found>'
-    print(f'synonyms: {synonyms}')
+    if synonyms == None:
+        logger.info(f'getSynonyms 050: synonyms not found')
+        return synonyms, 'getSynonyms 050: synonyms not found' 
+    else:
+        logger.info(f'getSynonyms 060: synonyms: {synonyms}')
+        
     return synonyms, None
