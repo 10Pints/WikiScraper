@@ -1,5 +1,5 @@
 # DDbConnect.py
-
+# mod from wikiscraper 1
 import pyodbc as pyodbc
 import logging.config
 logger = logging.getLogger("my_app")
