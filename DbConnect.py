@@ -1,4 +1,5 @@
 # DDbConnect.py
+# mod from wikiscraper 2
 
 import pyodbc as pyodbc
 import logging.config
